@@ -7,48 +7,56 @@ import throttle from 'lodash.throttle';
 
 const STORAGE_KEY = "feedback-form-state";
 
-const refs = {
-    form: document.querySelector('.feedback-form'),
-    input: document.querySelector('.feedback-form input'),
-    textarea: document.querySelector('.feedback-form textarea'),
-}
-
+// обьект для хранения данных
 const formData = {
     email: "",
-    message: ""
+    message: "",
+}
+const refs = {
+    form: document.querySelector(".feedback-form"),
+    input: document.querySelector(".feedback-form input"),
+    textarea: document.querySelector(".feedback-form textarea")
 };
 
-refs.form.addEventListener('input', throttle(onFormChange, 500));
-refs.form.addEventListener('submit', onSubmitForm);
+refs.form.addEventListener("input", throttle(onFormChange, 500));
+refs.form.addEventListener('submit', onFormSubmit);
 
-populateData();
+// ф-ция срабатывает при перезагрузке страницы
+onLoadPage();
 
-function onFormChange() {
-    formData.email = refs.input.value;
-    formData.message = refs.textarea.value,
-    // console.log('formData',formData);
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+function onFormChange(event) {
+// получает значение поля для соответствующего атрибута name
+   formData[event.target.name] = event.target.value;
+   console.log('formData', formData);
+// создает обьект с ключем в localStorage и приводит его к строке в формате JSON
+   localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+};
 
-}
-
-function populateData() {
-    const savedData = localStorage.getItem(STORAGE_KEY);
+function onLoadPage() {
+// получаем обьект с ключем
+   const savedData = localStorage.getItem(STORAGE_KEY);
+// проверяет есть ли созданный обьект в localStorage
+   if(savedData) {
+// распарсивает обьект из формата JSON
     const parsedData = JSON.parse(savedData);
-
-    if(savedData) {
-    console.log(parsedData);
+    console.log('parsedData before submit', parsedData);
+// записывает поля формы из соответсутвующего атрибута name
     refs.input.value = parsedData.email;
     refs.textarea.value = parsedData.message;
-    }
+   }
 };
 
-function onSubmitForm(event) {
-    console.log('submit form');
+function onFormSubmit(event) {
+// сброс параметров по умолчанию
     event.preventDefault();
+    console.log('submit form');
+// сброс текущей цели
     event.currentTarget.reset();
-    const userData = localStorage.getItem(STORAGE_KEY);
-    console.log('savedData', userData)
+// получает обьект после события Submit и распарсивает его из формата JSON
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    const parsedData = JSON.parse(savedData);
+    console.log('parsedData after Submit',parsedData);
+// удаляет обьект с ключем из localStorage
     localStorage.removeItem(STORAGE_KEY);
-    
-}
+};
